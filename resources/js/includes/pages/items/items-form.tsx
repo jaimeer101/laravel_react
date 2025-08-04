@@ -37,7 +37,8 @@ const formSchema = z.object({
 })
 
 export default function ItemsForm(data) {
-    let itemsId = data.children.id;
+    console.log(data);
+    let itemsId = data.children.item_details && data.children.item_details.id ? data.children.item_details.id : '';
     let formUrl = "/api/items/store";
 
     if(itemsId){
@@ -47,14 +48,34 @@ export default function ItemsForm(data) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            categories_id: "",
-            items_code: "",
-            items_name: "",
+            categories_id: data.children.item_details && data.children.item_details.categories_id ? data.children.item_details.categories_id : "",
+            items_code: data.children.item_details && data.children.item_details.items_code ? data.children.item_details.items_code : "",
+            items_name: data.children.item_details && data.children.item_details.items_name ? data.children.item_details.items_name : "",
         },
     })
 
     const onSubmit = async (formData) => {
-        console.log(formData)
+        axios.post(formUrl, formData)
+            .then(response => {
+                var message = response.data.message;
+                if(message !== 'undefined'){
+                    alert(message);
+                    window.location.reload();
+                }
+                
+            })
+            .catch(error => {
+                if (error.response && error.response.data && error.response.data.errors) {
+                    // Assuming your API returns errors in a format like:
+                    const serverErrors = error.response.data.errors;
+                    Object.keys(serverErrors).forEach((field) => {
+                        form.setError(field, {
+                            type: "server", // Custom type to distinguish server errors
+                            message: serverErrors[field],
+                        });
+                    });
+                }
+            });
     };
 
     return (

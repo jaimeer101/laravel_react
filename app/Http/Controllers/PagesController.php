@@ -19,7 +19,7 @@ class PagesController extends Controller
     }
 
     public function items() {
-        $data = Item::all();
+        $data = Item::with('categories')->get();
         $page = "list";
         return Inertia::render('items', [
             'data' => $data,
