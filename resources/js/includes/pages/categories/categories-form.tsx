@@ -43,6 +43,14 @@ const formSchema = z.object({
 })
 
 export default function CategoriesForm(data) {
+    const [open, setOpen] = React.useState(false);
+    const [resultDialogContent, setResultDialogContent] = useState({
+        title: "Result",
+        description: "This is a sample", 
+        onAction: () => {
+            setOpen(false)
+        },
+    });
     let categoryId = data.children.id;
     let formUrl = "/api/categories/store";
 
@@ -62,8 +70,17 @@ export default function CategoriesForm(data) {
         axios.post(formUrl, formData)
             .then(response => {
                 var message = response.data.message;
-                alert(message);
-                window.location.reload();
+                setOpen(true);
+                var message = response.data.message;
+                setResultDialogContent({
+                    title: "Result",
+                    description: message, 
+                    onAction : () => {
+                        window.location.reload()
+                    }
+                });
+                // alert(message);
+                // window.location.reload();
             })
             .catch(error => {
                 if (error.response && error.response.data && error.response.data.errors) {
@@ -82,6 +99,21 @@ export default function CategoriesForm(data) {
 
     return (
             <Form {...form}>
+                <AlertDialog open={open} onOpenChange={setOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{resultDialogContent.title}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {resultDialogContent.description}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogAction onClick={resultDialogContent.onAction}>
+                                Ok
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
                 <h1>Category Form</h1>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField

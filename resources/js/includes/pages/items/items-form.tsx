@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import {Link } from '@inertiajs/react';
 import axios from 'axios';
+import React, { useState } from 'react'; 
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,18 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 const formSchema = z.object({
     categories_id: z.string().min(1, {
         message: "Category is required",
@@ -37,7 +50,15 @@ const formSchema = z.object({
 })
 
 export default function ItemsForm(data) {
-    console.log(data);
+    const [open, setOpen] = React.useState(false);
+    const [resultDialogContent, setResultDialogContent] = useState({
+        title: "Result",
+        description: "This is a sample", 
+        onAction: () => {
+            setOpen(false)
+        },
+    });
+    
     let itemsId = data.children.item_details && data.children.item_details.id ? data.children.item_details.id : '';
     let formUrl = "/api/items/store";
 
@@ -59,8 +80,17 @@ export default function ItemsForm(data) {
             .then(response => {
                 var message = response.data.message;
                 if(message !== 'undefined'){
-                    alert(message);
-                    window.location.reload();
+                    // alert(message);
+                    // window.location.reload();
+                    setOpen(true)
+                    var message = response.data.message;
+                    setResultDialogContent({
+                        title: "Result",
+                        description: message, 
+                        onAction : () => {
+                            window.location.reload()
+                        }
+                    });
                 }
                 
             })
@@ -80,6 +110,21 @@ export default function ItemsForm(data) {
 
     return (
         <Form {...form}>
+            <AlertDialog open={open} onOpenChange={setOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{resultDialogContent.title}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {resultDialogContent.description}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={resultDialogContent.onAction}>
+                            Ok
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <h1>Item Form</h1>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
