@@ -125,9 +125,10 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request)
     {
-        $deleteCategory = Category::where('id', $id)->delete();
+        $categories = $request->get("id");
+        $deleteCategory = Category::whereIn('id', $categories)->delete();
         $type = "success";
         $message = "Category delete successful";
         if(!is_numeric($deleteCategory)){

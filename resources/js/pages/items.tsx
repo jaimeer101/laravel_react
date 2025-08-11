@@ -10,8 +10,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Item({ data, page }) {
-    let display;
+export default function Item({ data, page, title }) {
+    let display, showTitle;
+    showTitle = title ? title : "Items"
     if(page == "list"){
         display = <ItemsList>{data}</ItemsList>
     }
@@ -20,7 +21,7 @@ export default function Item({ data, page }) {
     }
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Items" />
+        <Head title={showTitle} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                 {display}
             </div>

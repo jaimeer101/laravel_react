@@ -23,6 +23,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/items', [PagesController::class, 'items']);
     Route::get('/items/create', [ItemController::class, 'index']);
     Route::get('/items/show/{id}', [ItemController::class, 'show']);
+
+    Route::get('/datatables', [PagesController::class, 'datatables']);
 });
 
 require __DIR__.'/settings.php';

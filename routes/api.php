@@ -13,9 +13,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::POST('categories/store', [CategoryController::class, 'store']);
     Route::POST('categories/update/{id}', [CategoryController::class, 'update']);
     Route::GET('categories/delete/{id}', [CategoryController::class, 'destroy']);
+    Route::POST('categories/delete', [CategoryController::class, 'destroy']);
 
     Route::POST('items/store', [ItemController::class, 'store']);
     Route::POST('items/update/{id}', [ItemController::class, 'update']);
     Route::GET('items/delete/{id}', [ItemController::class, 'destroy']);
+    Route::POST('items/delete', [ItemController::class, 'destroy']);
 });
 

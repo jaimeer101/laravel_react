@@ -23,6 +23,11 @@ const mainNavItems: NavItem[] = [
         href: '/items',
         icon: ShoppingCart,
     },
+    {
+        title: 'DataTable',
+        href: '/datatables',
+        icon: ShoppingCart,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
