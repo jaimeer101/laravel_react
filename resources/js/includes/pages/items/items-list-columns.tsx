@@ -94,7 +94,7 @@ export const columns: ColumnDef<Items>[] = [
 					<ArrowUpDown />
 				</Button>
 			)
-		},
+		}, 
     },
     {
         "accessorKey" : "discounted_rate", 

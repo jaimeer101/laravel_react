@@ -44,17 +44,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { DisplayAlertMessage } from "@/alert-dialogs/alert-message";
+import { DisplayConfirmationMessage } from "@/alert-dialogs/alert-confirm";
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
@@ -90,13 +81,32 @@ export function DataTable<TData, TValue>({
         },
     }); 
     const [open, setOpen] = React.useState(false);
+    const [deleteOpen, setDeleteOpen] = React.useState(false);
     const [resultDialogContent, setResultDialogContent] = useState({
         title: "Result",
         description: "This is a sample", 
-        onAction: () => {
-            setOpen(false)
-        },
+        // onAction: () => {
+        //     setOpen(false)
+        // },
     });
+    const checkItem = () => {
+        const selectedRows = table.getSelectedRowModel().rows;
+        const selectedData = selectedRows.map((row) => row.original.id);
+        if (selectedData.length !== 0) {
+            setDeleteOpen(true)
+        }
+        else{
+            setOpen(true)
+            setResultDialogContent({
+                title: "Message",
+                description: "No Selected Items", 
+                // onAction : () => { 
+                //     setOpen(false)
+                // }
+            });
+            
+        }
+    }
     const deleteItem = () => {
         const selectedRows = table.getSelectedRowModel().rows;
         const selectedData = selectedRows.map((row) => row.original.id);
@@ -111,10 +121,11 @@ export function DataTable<TData, TValue>({
                     setResultDialogContent({
                         title: "Result",
                         description: message, 
-                        onAction : () => {
-                            window.location.reload()
-                        }
+                        // onAction : () => {
+                        //     window.location.reload()
+                        // }
                     });
+                    
                 })
                 .catch(error => {
                     if (error.response && error.response.data && error.response.data.errors) {
@@ -123,9 +134,9 @@ export function DataTable<TData, TValue>({
                         setResultDialogContent({
                             title: "Error",
                             description: serverErrors, 
-                            onAction : () => {
-                                console.log(error)
-                            }
+                            // onAction : () => {
+                            //     console.log(error)
+                            // }
                         });
                     }
                 });
@@ -135,9 +146,9 @@ export function DataTable<TData, TValue>({
             setResultDialogContent({
                 title: "Message",
                 description: "No Selected Items", 
-                onAction : () => { 
-                    setOpen(false)
-                }
+                // onAction : () => { 
+                //     setOpen(false)
+                // }
             });
         }
         
@@ -148,21 +159,18 @@ export function DataTable<TData, TValue>({
     });
     return (
         <div className="w-full">
-            <AlertDialog open={open} onOpenChange={setOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{resultDialogContent.title}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {resultDialogContent.description}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogAction onClick={resultDialogContent.onAction}>
-                            Ok
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <DisplayAlertMessage 
+                title={resultDialogContent.title}
+                description={resultDialogContent.description} 
+                display_status={open} 
+                onOpenChange={setOpen} />
+            <DisplayConfirmationMessage 
+                title={dialogContent.title} 
+                description={dialogContent.description}
+                onConfirm={deleteItem} 
+                open={deleteOpen} 
+                onOpenChange={setDeleteOpen}
+            />
             <div className="flex w-full items-center py-4">
                 <Input
                     placeholder="Filter names..."
@@ -200,21 +208,7 @@ export function DataTable<TData, TValue>({
                     }</DropdownMenuContent>
                 </DropdownMenu>
                 <div className="flex items-center space-x-2 ml-2">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive">Delete</Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>{dialogContent.title}</AlertDialogTitle>
-                                <AlertDialogDescription>{dialogContent.description}</AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteItem()}>Continue</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                    <Button variant="destructive" onClick={() => checkItem()}>Delete</Button>
                 </div>
             </div>
             <div className="overflow-hidden rounded-md border">
@@ -242,10 +236,11 @@ export function DataTable<TData, TValue>({
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
+                                    data-state={row.getIsSelected() && "selected"} 
+                                 >
                                 {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
+                                    <TableCell 
+                                        key={cell.id} >
                                     {flexRender(
                                         cell.column.columnDef.cell,
                                         cell.getContext()

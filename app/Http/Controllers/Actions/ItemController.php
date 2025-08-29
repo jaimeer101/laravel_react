@@ -9,6 +9,8 @@ use App\Models\ItemsPrices;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
 
 
 class ItemController extends Controller
@@ -70,7 +72,7 @@ class ItemController extends Controller
             'discounted_rate' => (double)$validateData["items_discount_rate"],
             'created_by' => Auth::id()
         ];
-        // dd($submitData);
+        // dd($request->file('items_image'));
         $item = Item::create($submitData);
         $type = "";
 
@@ -78,7 +80,28 @@ class ItemController extends Controller
             $type = "danger";
             $message = $item;
         }
-
+        if($type == ""){
+            $itemsId = $item->id;
+            $extension = $request->file('items_image')->getClientOriginalExtension();
+            $imageName = "image_".$itemsId."_".$validateData["items_code"].".".$extension;
+            
+            if ($request->hasFile('items_image') && $request->file('items_image')->isValid()) {
+                $path = $request->file('items_image')->storeAs('images/items/main',$imageName, 'public');
+                $updateData = [
+                    'items_image' => Storage::url($path), 
+                ];
+                $updateItemsImage = Item::where('id', $itemsId)->update($updateData);
+                if(!is_numeric($updateItemsImage)){
+                    $type = "danger";
+                    $message = "Item Image: ".$updateItemsImage;
+                }
+            }
+            else{
+                $type = "danger";
+                $message = "File not found";
+            }
+            
+        }
         if($type == ""){
             $updateItemsPrices = $this->items_price->update_items_prices($item->id, $validateData);
             if(!is_numeric($updateItemsPrices)){
@@ -131,7 +154,8 @@ class ItemController extends Controller
             'items_code' => 'required|unique:items,items_code,'.$itemsId, 
             'items_name' => 'required|unique:items,items_name,'.$itemsId, 
             'items_price' => 'required|numeric|gt:0', 
-            'items_discount_rate' => 'numeric'
+            'items_discount_rate' => 'numeric', 
+            'items_image' => 'required|image'
         ];
         $message = [
             'categories_id.required' => 'Category is required',
@@ -143,24 +167,46 @@ class ItemController extends Controller
             'items_price.numeric' => 'Price must be number', 
             'items_price.gt' => 'Price must be greater than 0', 
             'items_discount_rate.numeric' => 'Discount rate must be number', 
+            'items_image.required' => 'Image is required', 
+            'items_image.image' => 'Selected Item is not an image', 
         ];
+        $path = "";
         $validateData = $request->validateWithBag('items',$rules , $message);
-
-        $submitData = [
-            'categories_id' => $validateData["categories_id"],
-            'items_code' => $validateData["items_code"],
-            'items_name' => $validateData["items_name"],
-            'price' => $validateData["items_price"],
-            'discounted_rate' => $validateData["items_discount_rate"],
-            'updated_by' => Auth::id()
-        ];
-        $item = Item::where('id', $itemsId)->update($submitData);
-        
-
-        if(!is_numeric($item)){
-            $type = "danger";
-            $message = "Item: ".$item;
+        $extension = $request->file('items_image')->getClientOriginalExtension();
+        $imageName = "image_".$itemsId."_".$validateData["items_code"].".".$extension;
+        if ($request->hasFile('items_image') && $request->file('items_image')->isValid()) {
+            $path = $request->file('items_image')->storeAs('images/items/main',$imageName, 'public');
         }
+        else{
+            $type = "danger";
+            $message = "Please check the file, cannot upload";
+        }
+        if($type == ""){
+            $submitData = [
+                'categories_id' => $validateData["categories_id"],
+                'items_code' => $validateData["items_code"],
+                'items_name' => $validateData["items_name"],
+                'price' => $validateData["items_price"],
+                'items_image' => Storage::url($path), 
+                'discounted_rate' => $validateData["items_discount_rate"],
+                'updated_by' => Auth::id(), 
+
+            ];
+            $item = Item::where('id', $itemsId)->update($submitData);
+            
+
+            if(!is_numeric($item)){
+                $type = "danger";
+                $message = "Item: ".$item;
+            }
+        }
+        // echo $path;
+        // exit;
+        // if(!path){
+        //     echo "Error in uploading";
+        //     exit;
+        // }
+        
         if($type == ""){
             $updateItemsPrices = $this->items_price->update_items_prices($itemsId, $validateData);
             if(!is_numeric($updateItemsPrices)){

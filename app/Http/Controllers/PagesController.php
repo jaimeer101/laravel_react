@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Hash;
 
 class PagesController extends Controller
 {
@@ -31,6 +32,9 @@ class PagesController extends Controller
     }
 
     public function items() {
+        $hashed = Hash::make('admin');
+        // echo $hashed;
+        // exit();
         $itemsList = Item::with('categories')->get();
         $data = [];
         $count = 1;
